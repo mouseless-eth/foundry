@@ -55,7 +55,7 @@ impl ProjectCompiler {
             let output = if filters.is_empty() {
                 prj.compile()
             } else {
-                prj.compile_sparse(SkipBuildFilters(filters))
+                prj.compile_sparse(Box::new(SkipBuildFilters(filters)))
             }?;
             Ok(output)
         })
@@ -71,7 +71,7 @@ impl ProjectCompiler {
         project: &Project,
         filter: F,
     ) -> Result<ProjectCompileOutput> {
-        self.compile_with(project, |prj| Ok(prj.compile_sparse(filter)?))
+        self.compile_with(project, |prj| Ok(prj.compile_sparse(Box::new(filter))?))
     }
 
     /// Compiles the project with the given closure
@@ -342,7 +342,7 @@ pub fn try_suppress_compile_sparse<F: FileFilter + 'static>(
 ) -> Result<ProjectCompileOutput> {
     Ok(foundry_compilers::report::with_scoped(
         &foundry_compilers::report::Report::new(NoReporter::default()),
-        || project.compile_sparse(filter),
+        || project.compile_sparse(Box::new(filter)),
     )?)
 }
 
